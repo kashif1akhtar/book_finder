@@ -15,6 +15,7 @@ class BookViewModel extends StateNotifier<AsyncValue<List<Book>>> {
   final Logger logger;
   int currentPage = 1;
   String currentQuery = '';
+  bool isLoadingMore = false;
 
   BookViewModel(
       this.getBooksUseCase,
@@ -90,7 +91,8 @@ class BookViewModel extends StateNotifier<AsyncValue<List<Book>>> {
   }
 
   Future<void> loadMore(String query) async {
-    if (state.isLoading) return;
+    if (isLoadingMore || currentQuery.isEmpty) return;
+    isLoadingMore = true;
     final nexPage = currentPage +1;
     try {
       final result = await getBooksUseCase(query, nexPage);
@@ -107,6 +109,9 @@ class BookViewModel extends StateNotifier<AsyncValue<List<Book>>> {
     } catch (e) {
       logger.e('Unexpected error: $e');
       state = AsyncValue.error('Unexpected error occurred', StackTrace.current);
+    }
+    finally {
+      isLoadingMore = false;
     }
   }
 

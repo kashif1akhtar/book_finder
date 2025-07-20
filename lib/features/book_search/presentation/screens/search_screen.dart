@@ -1,8 +1,6 @@
 import 'package:book_finder/core/util/custom_snackbar.dart';
-import 'package:book_finder/core/util/snack_bar.dart';
 import 'package:book_finder/features/book_search/domain/entities/book_entity.dart';
 import 'package:book_finder/features/book_search/presentation/screens/book_detail_screen.dart';
-import 'package:book_finder/features/book_search/presentation/screens/book_details.dart';
 import 'package:book_finder/features/book_search/presentation/viewmodels/book_viewmodel.dart';
 import 'package:book_finder/features/book_search/presentation/widgets/book_card_item.dart';
 import 'package:flutter/cupertino.dart';
@@ -20,27 +18,29 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   final ScrollController _scrollController = ScrollController();
 
 
-  void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent * 0.9) {
-      ref.read(bookViewModelProvider.notifier).loadMore(_controller.text);
-    }
-  }
-
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(_onScroll);
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent * 0.9 &&
+          !ref.read(bookViewModelProvider.notifier).isLoadingMore) {
+        ref.read(bookViewModelProvider.notifier).loadMore(_controller.text);
+      }
+    });
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final booksState = ref.watch(bookViewModelProvider);
+    final bookViewModel = ref.watch(bookViewModelProvider.notifier);
 
     return Scaffold(
       appBar: AppBar(
@@ -79,7 +79,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               onRefresh: () => ref
                   .read(bookViewModelProvider.notifier)
                   .searchBooks(_controller.text, isRefresh: true),
-              child: _buildContent(booksState),
+              child: _buildContent(booksState, bookViewModel),
             ),
           ),
         ],
@@ -87,28 +87,29 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     );
   }
 
-  Widget _buildContent(AsyncValue<List<Book>> booksState) {
+  Widget _buildContent(AsyncValue<List<Book>> booksState, BookViewModel bookViewModel) {
     return booksState.when(
-      data: (books) => ListView.builder(
-        controller: _scrollController,
-        itemCount: books.length,
-        itemBuilder: (context, index) {
-          if (index >= books.length) {
-            return _buildShimmerCard();
-          }
-          final book = books[index];
-          return BookCard(
-            book: book,
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                //builder: (_) => DetailsScreen(bookId: book.id.split('/').last),
-                builder: (_) => BookDetailsScreen(book: book,),
+      data: (books) {
+        if (books.isEmpty && _controller.text.isNotEmpty ) {
+          return _buildEmptyState();
+        }
+        return ListView.builder(
+          controller: _scrollController,
+          itemCount: books.length,
+          itemBuilder: (context, index) {
+            final book = books[index];
+            return BookCard(
+              book: book,
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => BookDetailsScreen(book: book),
+                ),
               ),
-            ),
-          );
-        },
-      ),
+            );
+          },
+        );
+      },
       loading: () => _buildShimmerCard(),
       error: (error, _) => _buildErrorWidget(booksState),
     );
@@ -144,6 +145,30 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           ElevatedButton(
             onPressed: () => ref.read(bookViewModelProvider.notifier).searchBooks(_controller.text, isRefresh: true),
             child: const Text('Retry'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return const Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.search_off,
+            size: 64,
+            color: Colors.blueAccent,
+          ),
+          SizedBox(height: 16),
+          Text(
+            'No books found for your search',
+            style: TextStyle(
+              fontSize: 18,
+              color: Colors.grey,
+            ),
+            textAlign: TextAlign.center,
           ),
         ],
       ),

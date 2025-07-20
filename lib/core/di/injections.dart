@@ -29,7 +29,7 @@ Future<void> configureDependencies() async {
     join(await getDatabasesPath(), 'books.db'),
     onCreate: (db, version) {
       return db.execute(
-        'CREATE TABLE books(id TEXT PRIMARY KEY, title TEXT, author TEXT, coverUrl TEXT)',
+        'CREATE TABLE books(id TEXT PRIMARY KEY, title TEXT, author TEXT, coverUrl TEXT, description TEXT)',
       );
     },
     version: 1,

@@ -1,4 +1,3 @@
-import 'package:book_finder/core/viewmodels/local_view_model.dart';
 import 'package:book_finder/core/viewmodels/theme_view_model.dart';
 import 'package:book_finder/features/book_search/presentation/screens/search_screen.dart';
 import 'package:flutter/material.dart';
@@ -18,68 +17,16 @@ class MyApp extends ConsumerWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final locale = ref.watch(localizationViewModelProvider);
     final themeMode = ref.watch(themeViewModelProvider);
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
+      title: 'Book Finder App',
       themeMode: themeMode.isDark ? ThemeMode.dark : ThemeMode.light,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
       ),
-      locale: locale,
-      supportedLocales: const [
-        Locale('en', ''),
-        Locale('es', ''),
-      ],
       home: SearchScreen(),
-    );
-  }
-}
-
-class SplashScreen extends StatefulWidget {
-  @override
-  _SplashScreenState createState() => _SplashScreenState();
-}
-
-class _SplashScreenState extends State<SplashScreen> {
-  @override
-  void initState() {
-    super.initState();
-    // Navigate to SearchScreen after 2 seconds
-    Future.delayed(const Duration(seconds: 2), () {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => SearchScreen()),
-      );
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.blue,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.book,
-              size: 100,
-              color: Colors.white,
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Book Finder',
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

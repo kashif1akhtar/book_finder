@@ -1,3 +1,4 @@
+import 'package:book_finder/core/error/error_handle.dart';
 import 'package:dio/dio.dart';
 
 import '../../models/book_model.dart';
@@ -43,5 +44,26 @@ class BookRemoteDataSourceImpl implements BookRemoteDataSource {
     } catch (e) {
       throw Exception('Failed to get book details: $e');
     }
+  }
+
+  Future<T> _retryOnRateLimit<T>(Future<T> Function() operation, {int maxRetries = 3}) async {
+    int attempt = 0;
+    while (attempt < maxRetries) {
+      try {
+        return await operation();
+      } catch (e) {
+        if (e is DioException && e.response?.statusCode == 429) {
+          attempt++;
+          if (attempt >= maxRetries) {
+            throw RateLimitFailure('Rate limit exceeded after $maxRetries retries');
+          }
+          // Exponential backoff: wait 2^attempt seconds
+          await Future.delayed(Duration(seconds: 1 << attempt));
+        } else {
+          throw e;
+        }
+      }
+    }
+    throw RateLimitFailure('Rate limit retry logic failed');
   }
 }

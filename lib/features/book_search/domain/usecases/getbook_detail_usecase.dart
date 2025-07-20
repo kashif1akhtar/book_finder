@@ -9,7 +9,7 @@ class GetBookDetailsUseCase {
   GetBookDetailsUseCase(this.repository);
 
   Future<Either<Failure, Book>> call(String id) async {
-    print("Do we have the id here"+id);
+    //print("Do we have the id here"+id);
     return await repository.getBookDetails(id);
   }
 }

@@ -9,50 +9,18 @@ A Flutter application that allows users to search for books using the Open Libra
 - **Book Details**: View detailed information about books with animated cover
 - **Save Books**: Save books locally using SQLite database
 - **Pull to Refresh**: Refresh search results with pull-to-refresh gesture
-- **Pagination**: Load more results as user scrolls
+- **Pagination**: Load more results as user scrolls till 90 percent of the listing screen
 - **Shimmer Loading**: Beautiful loading animations while fetching data
 
 ### Technical Implementation
-- **Clean Architecture**: Separation of concerns with Data, Domain, and Presentation layers
-- **State Management**: Riverpod for reactive state management
+- **Clean Architecture**: Separation of concerns with Data, Domain, and Presentation layers -- with view model
+- **State Management**: Riverpod for reactive state management with viewmodel
 - **Database**: SQLite for local storage
 - **Network**: Dio for HTTP requests
 - **Animations**: Custom book cover rotation animation
-- **Error Handling**: Comprehensive error handling for network and database operations
+- **Error Handling**: Error handling classes 
 - **Unit Testing**: Tests for repository and provider logic
 
-## Architecture
-
-The app follows Clean Architecture principles:
-
-```
-lib/
-├── core/
-│   └── database/
-│       └── database_helper.dart
-├── data/
-│   ├── datasources/
-│   │   └── book_remote_datasource.dart
-│   ├── models/
-│   │   ├── book_response.dart
-│   │   └── book_response.g.dart
-│   └── repositories/
-│       └── book_repository_impl.dart
-├── domain/
-│   ├── entities/
-│   │   └── book.dart
-│   └── repositories/
-│       └── book_repository.dart
-├── presentation/
-│   ├── providers/
-│   │   └── book_provider.dart
-│   ├── screens/
-│   │   ├── search_screen.dart
-│   │   └── book_details_screen.dart
-│   └── widgets/
-│       └── book_card.dart
-└── main.dart
-```
 
 ## API Integration
 
@@ -63,25 +31,14 @@ The app integrates with the Open Library API:
 
 ## State Management
 
-Uses Riverpod for state management with the following providers:
-- `searchProvider`: Manages search state and pagination
-- `bookDetailsProvider`: Fetches detailed book information
-- `savedBooksProvider`: Manages locally saved books
+Uses Riverpod for state management with the following view model:
+- `bookViewModel`: Manages search state and pagination, Fetches detailed book information, Manages locally saved books
 
 ## Database Schema
 
 SQLite table structure:
 ```sql
-CREATE TABLE books (
-  id TEXT PRIMARY KEY,
-  title TEXT NOT NULL,
-  author TEXT NOT NULL,
-  coverUrl TEXT,
-  description TEXT,
-  publishYear INTEGER,
-  isbn TEXT,
-  createdAt TEXT NOT NULL
-)
+CREATE TABLE books(id TEXT PRIMARY KEY, title TEXT, author TEXT, coverUrl TEXT, description TEXT)
 ```
 
 ## Getting Started
@@ -89,8 +46,9 @@ CREATE TABLE books (
 ### Prerequisites
 - Flutter SDK (>=3.0.0)
 - Dart SDK
-- Android Studio / VS Code
+- Android Studio
 - Android device or emulator
+- Xcode 
 
 ### Installation
 
@@ -117,11 +75,6 @@ Run unit tests:
 flutter test
 ```
 
-Run tests with coverage:
-```bash
-flutter test --coverage
-```
-
 ## Dependencies
 
 ### Main Dependencies
@@ -132,6 +85,7 @@ flutter test --coverage
 - `cached_network_image`: Image caching
 - `equatable`: Value equality
 - `json_annotation`: JSON serialization
+- `get_it` : For dependency injection
 
 ### Dev Dependencies
 - `build_runner`: Code generation
@@ -161,35 +115,8 @@ flutter test --coverage
 - Riverpod state management
 - Clean architecture implementation
 - SQLite local storage
-- Comprehensive error handling
-- Unit tests for repository and provider logic
+- Unit tests for repository 
 
-## Testing
-
-The app includes comprehensive unit tests covering:
-- Repository layer testing with mocked dependencies
-- Provider state management testing
-- Error handling scenarios
-- Edge cases and data validation
-
-## Future Enhancements
-
-Potential improvements:
-- Add search history
-- Implement book categories/genres
-- Add book rating system
-- Implement offline mode
-- Add book recommendations
-- Social features (sharing, reviews)
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Ensure all tests pass
-6. Submit a pull request
 
 ## License
 

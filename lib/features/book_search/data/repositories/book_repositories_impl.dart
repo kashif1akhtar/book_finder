@@ -22,7 +22,7 @@ class BookRepositoryImpl implements BookRepository {
           .toList();
       return Right(books);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(e is RateLimitFailure ? e :ServerFailure(e.toString()));
     }
   }
 
@@ -39,7 +39,7 @@ class BookRepositoryImpl implements BookRepository {
       );
       return Right(book);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(e is RateLimitFailure ? e :ServerFailure(e.toString()));
     }
   }
 

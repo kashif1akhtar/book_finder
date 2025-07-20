@@ -1,32 +1,29 @@
 import 'package:book_finder/features/book_search/domain/entities/book_entity.dart';
 import 'package:book_finder/features/book_search/presentation/viewmodels/book_viewmodel.dart';
 import 'package:book_finder/features/book_search/presentation/widgets/animated_book_cover.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class DetailsScreen extends ConsumerStatefulWidget {
-  final String bookId;
+class BookDetailsScreen extends ConsumerStatefulWidget {
+  final Book book;
+  const BookDetailsScreen({super.key, required this.book});
 
-  const DetailsScreen({required this.bookId});
 
   @override
-  _DetailsScreenState createState() => _DetailsScreenState();
+  ConsumerState<BookDetailsScreen> createState() => _BookDetailsScreenState();
 }
 
-class _DetailsScreenState extends ConsumerState<DetailsScreen> {
+class _BookDetailsScreenState extends ConsumerState<BookDetailsScreen>{
+  bool _isBookSaved = false;
   Book? _book;
   bool _isLoading = true;
   String? _error;
 
-  @override
-  void initState() {
-    super.initState();
-    _fetchBookDetails();
-  }
-
   Future<void> _fetchBookDetails() async {
-    final book = await ref.read(bookViewModelProvider.notifier).getBookDetails(widget.bookId);
+
+    final book = await ref.read(bookViewModelProvider.notifier).getBookDetails(widget.book.id);
     setState(() {
       _book = book;
       _isLoading = false;
@@ -35,7 +32,27 @@ class _DetailsScreenState extends ConsumerState<DetailsScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _fetchBookDetails();
+    _checkIfBookSaved();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  Future<void> _checkIfBookSaved() async {
+    final saved =await ref.read(bookViewModelProvider.notifier).isBookSaved(widget.book);
+    setState(() {
+      _isBookSaved = saved;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final bookDetailsAsync = ref.watch(bookViewModelProvider);
     if (_isLoading) {
       return Scaffold(
         appBar: AppBar(title: const Text('Loading...')),
@@ -49,36 +66,97 @@ class _DetailsScreenState extends ConsumerState<DetailsScreen> {
         body: Center(child: Text(_error!)),
       );
     }
-
-    final book = _book!;
     return Scaffold(
-      appBar: AppBar(title: Text(book.title)),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      appBar: AppBar(
+        title: Text(widget.book.title),
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        actions: [
+          IconButton(
+            icon: Icon(
+              _isBookSaved ? Icons.bookmark : Icons.bookmark_border,
+              color: _isBookSaved ? Colors.orange : null,
+            ),
+            onPressed: _toggleBookmark,
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            AnimatedBookCover(coverUrl: book.coverUrl),
-            const SizedBox(height: 16),
-            Text(book.title, style: Theme.of(context).textTheme.headlineSmall),
-            Text(book.author ?? 'Unknown', style: Theme.of(context).textTheme.titleMedium),
-            if (book.description != null) ...[
-              const SizedBox(height: 16),
-              Text(book.description!, style: Theme.of(context).textTheme.bodyMedium),
-            ],
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {
-                ref.read(bookViewModelProvider.notifier).saveBook(book);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Book saved!')),
-                );
+            Center(
+              child: AnimatedBookCover(coverUrl: widget.book.coverUrl),
+            ),
+            const SizedBox(height: 32),
+            Text(
+              widget.book.title,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text('by ${widget.book.author}',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.grey[600],),
+            ),
+            const SizedBox(height: 24),
+            bookDetailsAsync.when(
+              data: (detailedBook) {
+                if (detailedBook!= null) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Description',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        _book?.description ?? "Description not available",
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ],
+                  );
+                }
+                return const SizedBox.shrink();
               },
-              child: const Text('Save Book'),
+              loading: () => const Center(
+                child: CircularProgressIndicator(),
+              ),
+              error: (error, stackTrace) => const SizedBox.shrink(),
             ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _toggleBookmark() async {
+    if (_isBookSaved) {
+      await ref.read(bookViewModelProvider.notifier).deleteBook(widget.book);
+      setState(() {
+        _isBookSaved = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Book removed from saved books')),
+        );
+      }
+    } else {
+      ref.read(bookViewModelProvider.notifier).saveBook(widget.book);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Book saved!')),
+      );
+      setState(() {
+        _isBookSaved = true;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Book saved successfully')),
+        );
+      }
+    }
   }
 }
