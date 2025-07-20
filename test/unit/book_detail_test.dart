@@ -12,17 +12,17 @@ void main() {
   late GetBookDetailsUseCase usecase;
   late MockBookRepository mockRepository;
 
-  setUp(() {
+  setUp() {
     mockRepository = MockBookRepository();
     usecase = GetBookDetailsUseCase(mockRepository);
-  });
+  }
 
-  final tId = 'OL123W';
-  final tBook = Book(id: 'OL123W', title: 'Test Book', author: 'Author', coverUrl: 'url', description: 'Description');
+  final tId = 'OL55806W';
+  final tBook = Book(id: 'OL55806W', title: 'Test Book', author: 'Author', coverUrl: 'url', description: 'Description');
 
   test('should get book details from the repository', () async {
     // Arrange
-    when(mockRepository.getBookDetails("EYEHSSS")).thenAnswer((_) async => Right(tBook));
+    when(mockRepository.getBookDetails(tId)).thenAnswer((_) async => Right(tBook));
 
     // Act
     final result = await usecase(tId);
@@ -33,15 +33,28 @@ void main() {
     verifyNoMoreInteractions(mockRepository);
   });
 
-  test('should return failure when repository fails', () async {
+  test('should return server failure when repository fails', () async {
     // Arrange
-    when(mockRepository.getBookDetails("EYEHSSS")).thenAnswer((_) async => Left(ServerFailure('Server error')));
+    when(mockRepository.getBookDetails(tId)).thenAnswer((_) async => Left(ServerFailure('Server error')));
 
     // Act
     final result = await usecase(tId);
 
     // Assert
     expect(result, Left(ServerFailure('Server error')));
+    verify(mockRepository.getBookDetails(tId));
+    verifyNoMoreInteractions(mockRepository);
+  });
+
+  test('should return rate limit failure when repository fails with 429', () async {
+    // Arrange
+    when(mockRepository.getBookDetails(tId)).thenAnswer((_) async => Left(RateLimitFailure('Rate limit exceeded')));
+
+    // Act
+    final result = await usecase(tId);
+
+    // Assert
+    expect(result, Left(RateLimitFailure('Rate limit exceeded')));
     verify(mockRepository.getBookDetails(tId));
     verifyNoMoreInteractions(mockRepository);
   });

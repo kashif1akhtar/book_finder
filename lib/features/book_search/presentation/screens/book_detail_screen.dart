@@ -1,7 +1,6 @@
 import 'package:book_finder/features/book_search/domain/entities/book_entity.dart';
 import 'package:book_finder/features/book_search/presentation/providers/book_provider.dart';
 import 'package:book_finder/features/book_search/presentation/widgets/animated_book_cover.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
