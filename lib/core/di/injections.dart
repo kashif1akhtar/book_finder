@@ -7,7 +7,7 @@ import 'package:book_finder/features/book_search/domain/usecases/getbook_more_us
 import 'package:book_finder/features/book_search/domain/usecases/getbook_saved_usecase.dart';
 import 'package:book_finder/features/book_search/domain/usecases/getbook_usecase.dart';
 import 'package:book_finder/features/book_search/domain/usecases/savebook_usecase.dart';
-import 'package:book_finder/features/book_search/presentation/viewmodels/book_viewmodel.dart';
+import 'package:book_finder/features/book_search/presentation/providers/book_provider.dart';
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logger/logger.dart';
@@ -53,7 +53,7 @@ Future<void> configureDependencies() async {
   getIt.registerSingleton<GetBooksMoreUseCase>(GetBooksMoreUseCase(getIt<BookRepository>()));
 
   // ViewModel
-  getIt.registerFactory<BookViewModel>(() => BookViewModel(
+  getIt.registerFactory<BookProvider>(() => BookProvider(
     getIt<GetBooksUseCase>(),
     getIt<GetBookDetailsUseCase>(),
     getIt<SaveBookUseCase>(),

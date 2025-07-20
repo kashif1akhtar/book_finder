@@ -32,8 +32,6 @@ class BookLocalDataSourceImpl implements BookLocalDataSource {
     );
   }
 
-
-
   @override
   Future<List<BookModel>> getSavedBooks() async {
     try {

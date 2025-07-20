@@ -1,5 +1,5 @@
 import 'package:book_finder/features/book_search/domain/entities/book_entity.dart';
-import 'package:book_finder/features/book_search/presentation/viewmodels/book_viewmodel.dart';
+import 'package:book_finder/features/book_search/presentation/providers/book_provider.dart';
 import 'package:book_finder/features/book_search/presentation/widgets/animated_book_cover.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
@@ -23,7 +23,7 @@ class _BookDetailsScreenState extends ConsumerState<BookDetailsScreen>{
 
   Future<void> _fetchBookDetails() async {
 
-    final book = await ref.read(bookViewModelProvider.notifier).getBookDetails(widget.book.id);
+    final book = await ref.read(bookProvider.notifier).getBookDetails(widget.book.id);
     setState(() {
       _book = book;
       _isLoading = false;
@@ -44,7 +44,7 @@ class _BookDetailsScreenState extends ConsumerState<BookDetailsScreen>{
   }
 
   Future<void> _checkIfBookSaved() async {
-    final saved =await ref.read(bookViewModelProvider.notifier).isBookSaved(widget.book);
+    final saved =await ref.read(bookProvider.notifier).isBookSaved(widget.book);
     setState(() {
       _isBookSaved = saved;
     });
@@ -52,7 +52,7 @@ class _BookDetailsScreenState extends ConsumerState<BookDetailsScreen>{
 
   @override
   Widget build(BuildContext context) {
-    final bookDetailsAsync = ref.watch(bookViewModelProvider);
+    final bookDetailsAsync = ref.watch(bookProvider);
     if (_isLoading) {
       return Scaffold(
         appBar: AppBar(title: const Text('Loading...')),
@@ -135,7 +135,7 @@ class _BookDetailsScreenState extends ConsumerState<BookDetailsScreen>{
 
   Future<void> _toggleBookmark() async {
     if (_isBookSaved) {
-      await ref.read(bookViewModelProvider.notifier).deleteBook(widget.book);
+      await ref.read(bookProvider.notifier).deleteBook(widget.book);
       setState(() {
         _isBookSaved = false;
       });
@@ -145,7 +145,7 @@ class _BookDetailsScreenState extends ConsumerState<BookDetailsScreen>{
         );
       }
     } else {
-      ref.read(bookViewModelProvider.notifier).saveBook(widget.book);
+      ref.read(bookProvider.notifier).saveBook(widget.book);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Book saved!')),
       );

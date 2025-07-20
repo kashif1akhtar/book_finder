@@ -1,7 +1,7 @@
 import 'package:book_finder/core/util/custom_snackbar.dart';
 import 'package:book_finder/features/book_search/domain/entities/book_entity.dart';
 import 'package:book_finder/features/book_search/presentation/screens/book_detail_screen.dart';
-import 'package:book_finder/features/book_search/presentation/viewmodels/book_viewmodel.dart';
+import 'package:book_finder/features/book_search/presentation/providers/book_provider.dart';
 import 'package:book_finder/features/book_search/presentation/widgets/book_card_item.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -24,8 +24,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
           _scrollController.position.maxScrollExtent * 0.9 &&
-          !ref.read(bookViewModelProvider.notifier).isLoadingMore) {
-        ref.read(bookViewModelProvider.notifier).loadMore(_controller.text);
+          !ref.read(bookProvider.notifier).isLoadingMore) {
+        ref.read(bookProvider.notifier).loadMore(_controller.text);
       }
     });
   }
@@ -39,8 +39,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final booksState = ref.watch(bookViewModelProvider);
-    final bookViewModel = ref.watch(bookViewModelProvider.notifier);
+    final booksState = ref.watch(bookProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -65,7 +64,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               ),
               onSubmitted: (value) {
                 if (value.isNotEmpty) {
-                  ref.read(bookViewModelProvider.notifier).searchBooks(
+                  ref.read(bookProvider.notifier).searchBooks(
                       value, isRefresh: true);
                 }
                 else {
@@ -77,9 +76,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           Expanded(
             child: RefreshIndicator(
               onRefresh: () => ref
-                  .read(bookViewModelProvider.notifier)
+                  .read(bookProvider.notifier)
                   .searchBooks(_controller.text, isRefresh: true),
-              child: _buildContent(booksState, bookViewModel),
+              child: _buildContent(booksState,),
             ),
           ),
         ],
@@ -87,7 +86,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     );
   }
 
-  Widget _buildContent(AsyncValue<List<Book>> booksState, BookViewModel bookViewModel) {
+  Widget _buildContent(AsyncValue<List<Book>> booksState) {
     return booksState.when(
       data: (books) {
         if (books.isEmpty && _controller.text.isNotEmpty ) {
@@ -143,7 +142,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           ),
           const SizedBox(height: 16),
           ElevatedButton(
-            onPressed: () => ref.read(bookViewModelProvider.notifier).searchBooks(_controller.text, isRefresh: true),
+            onPressed: () => ref.read(bookProvider.notifier).searchBooks(_controller.text, isRefresh: true),
             child: const Text('Retry'),
           ),
         ],

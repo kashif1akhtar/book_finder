@@ -7,7 +7,7 @@ import 'package:book_finder/features/book_search/domain/usecases/savebook_usecas
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 
-class BookViewModel extends StateNotifier<AsyncValue<List<Book>>> {
+class BookProvider extends StateNotifier<AsyncValue<List<Book>>> {
   final GetBooksUseCase getBooksUseCase;
   final GetBookDetailsUseCase getBookDetailsUseCase;
   final SaveBookUseCase saveBookUseCase;
@@ -17,7 +17,7 @@ class BookViewModel extends StateNotifier<AsyncValue<List<Book>>> {
   String currentQuery = '';
   bool isLoadingMore = false;
 
-  BookViewModel(
+  BookProvider(
       this.getBooksUseCase,
       this.getBookDetailsUseCase,
       this.saveBookUseCase,
@@ -132,6 +132,6 @@ class BookViewModel extends StateNotifier<AsyncValue<List<Book>>> {
   }
 }
 
-final bookViewModelProvider = StateNotifierProvider<BookViewModel, AsyncValue<List<Book>>>((ref) {
-  return getIt<BookViewModel>();
+final bookProvider = StateNotifierProvider<BookProvider, AsyncValue<List<Book>>>((ref) {
+  return getIt<BookProvider>();
 });
